@@ -40,3 +40,6 @@ next-env.d.ts
 
 ingested_data/
 langchain.readthedocs.io/
+
+.replit
+replit.nix

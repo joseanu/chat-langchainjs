@@ -1,8 +1,9 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
-import { HNSWLib } from "langchain/vectorstores";
-import { OpenAIEmbeddings } from "langchain/embeddings";
+import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { CallbackManager } from "langchain/callbacks";
 import { makeChain } from "./util";
 
 export default async function handler(
@@ -12,7 +13,20 @@ export default async function handler(
   const body = req.body;
   const dir = path.resolve(process.cwd(), "data");
 
-  const vectorstore = await HNSWLib.load(dir, new OpenAIEmbeddings());
+  const supabaseClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  );
+
+  const vectorstore = await SupabaseVectorStore.fromExistingIndex(
+    new OpenAIEmbeddings(),
+    {
+      client: supabaseClient,
+      tableName: "documents",
+      queryName: "match_documents",
+    }
+  );
+
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     // Important to set no-transform to avoid compression, which will delay
@@ -27,9 +41,11 @@ export default async function handler(
   };
 
   sendData(JSON.stringify({ data: "" }));
-  const chain = makeChain(vectorstore, (token: string) => {
-    sendData(JSON.stringify({ data: token }));
-  });
+  const chain = makeChain(vectorstore, CallbackManager.fromHandlers({
+    async handleLLMNewToken(token: string) {
+      sendData(JSON.stringify({ data: token }));
+    }
+  }));
 
   try {
     await chain.call({

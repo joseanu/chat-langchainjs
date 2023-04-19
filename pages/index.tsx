@@ -18,7 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [messageState, setMessageState] = useState<{ messages: Message[], pending?: string, history: [string, string][] }>({
     messages: [{
-      "message": "Hi there! How can I help?",
+      "message": "Hola ¿Cómo puedo ayudarte?",
       "type": "apiMessage"
     }],
     history: []
@@ -89,6 +89,7 @@ export default function Home() {
           ctrl.abort();
         } else {
           const data = JSON.parse(event.data);
+          console.log(data);
           setMessageState(state => ({
             ...state,
             pending: (state.pending ?? "") + data.data,
@@ -116,30 +117,14 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>LangChain Chat</title>
-        <meta name="description" content="LangChain documentation chatbot" />
+        <title>GerenciaGPT</title>
+        <meta name="description" content="Chat sobre gerencia de proyectos" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className={styles.topnav}>
         <div className = {styles.navlogo}>
-          <Link href="/">LangChain</Link>
-        </div>
-        <div className = {styles.navlinks}>
-          <a
-            href="https://langchain.readthedocs.io/en/latest/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
-          </a>
-          <a
-            href="https://github.com/zahidkhawaja/langchain-chat-nextjs"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub
-          </a>
+          <Link href="/">GerenciaGPT</Link>
         </div>
       </div>
       <main className={styles.main}>
@@ -209,7 +194,7 @@ export default function Home() {
           <div className = {styles.footer}>
             <p>Powered by <a href="https://github.com/hwchase17/langchain" target="_blank" rel="noreferrer">
                 LangChain
-              </a>. Built by <a href="https://twitter.com/chillzaza_" target="_blank" rel="noreferrer">Zahid</a> and <a href="https://twitter.com/_seanyneutron" target="_blank" rel="noreferrer">Sean</a>.</p>
+              </a>. Built by <a href="https://www.linkedin.com/in/joseanu/" target="_blank" rel="noreferrer">Antonio Ulloa</a>.</p>
           </div>
         </div>
       </main>

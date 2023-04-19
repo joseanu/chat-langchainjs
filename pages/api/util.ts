@@ -1,29 +1,29 @@
-import { OpenAI } from "langchain/llms";
+import { OpenAI } from "langchain/llms/openai";
 import { LLMChain, ChatVectorDBQAChain, loadQAChain } from "langchain/chains";
-import { HNSWLib } from "langchain/vectorstores";
+import { CallbackManager } from "langchain/callbacks";
+import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { PromptTemplate } from "langchain/prompts";
 
-const CONDENSE_PROMPT = PromptTemplate.fromTemplate(`Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
+const CONDENSE_PROMPT = PromptTemplate.fromTemplate(`Dado el siguiente diálogo y una pregunta de seguimiento, reformula la pregunta de seguimiento para que sea una pregunta independiente.
 
-Chat History:
+Historial del chat:
 {chat_history}
-Follow Up Input: {question}
-Standalone question:`);
+Entrada de seguimiento: {question}
+Pregunta independiente:`);
 
 const QA_PROMPT = PromptTemplate.fromTemplate(
-  `You are an AI assistant for the open source library LangChain. The documentation is located at https://langchain.readthedocs.io.
-You are given the following extracted parts of a long document and a question. Provide a conversational answer with a hyperlink to the documentation.
-You should only use hyperlinks that are explicitly listed as a source in the context. Do NOT make up a hyperlink that is not listed.
-If the question includes a request for code, provide a code block directly from the documentation.
-If you don't know the answer, just say "Hmm, I'm not sure." Don't try to make up an answer.
-If the question is not about LangChain, politely inform them that you are tuned to only answer questions about LangChain.
-Question: {question}
+  `Eres un experto en Administración de Proyectos de Construcción. Se te proporcionan las siguientes partes extraídas de varios documentos y una pregunta. Proporcione una respuesta conversacional basada en el contexto proporcionado.
+Solo debes usar documentos como referencias que estén explícitamente enumerados como fuente en el contexto a continuación. NO inventes un documentos que no esté listado a continuación.
+Si no puedes encontrar la respuesta en el contexto a continuación, simplemente di "No estoy seguro." No intentes inventar una respuesta.
+Si la pregunta no está relacionada con Administración de Proyectos de Construcción o el contexto proporcionado, infórmales amablemente que estás ajustado para responder solo preguntas relacionadas con este tema.
+
+Pregunta: {question}
 =========
 {context}
 =========
-Answer in Markdown:`);
+Respuesta en Markdown:`);
 
-export const makeChain = (vectorstore: HNSWLib, onTokenStream?: (token: string) => void) => {
+export const makeChain = (vectorstore: SupabaseVectorStore, onTokenStream: CallbackManager) => {
   const questionGenerator = new LLMChain({
     llm: new OpenAI({ temperature: 0 }),
     prompt: CONDENSE_PROMPT,
@@ -32,9 +32,7 @@ export const makeChain = (vectorstore: HNSWLib, onTokenStream?: (token: string) 
     new OpenAI({
       temperature: 0,
       streaming: Boolean(onTokenStream),
-      callbackManager: {
-        handleNewToken: onTokenStream,
-      }
+      callbackManager: onTokenStream,
     }),
     { prompt: QA_PROMPT },
   );
@@ -45,4 +43,3 @@ export const makeChain = (vectorstore: HNSWLib, onTokenStream?: (token: string) 
     questionGeneratorChain: questionGenerator,
   });
 }
-
