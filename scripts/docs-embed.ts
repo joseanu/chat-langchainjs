@@ -2,14 +2,17 @@ import { Document } from 'langchain/document';
 import * as fs from 'fs/promises';
 import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 import { TextLoader } from "langchain/document_loaders/fs/text";
-import { EPubLoader } from "@/utils/custom_epub_loader";
-import { PDFLoader } from "@/utils/custom_pdf_loader";
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { EPubLoader } from "langchain/document_loaders/fs/epub";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { Embeddings } from 'langchain/embeddings';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { supabaseClient } from '@/utils/supabase-client';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
+const supabaseClient: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
 const directory = "/Users/joseanu/Desktop/manuales/axioma/libro"
 

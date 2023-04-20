@@ -1,8 +1,0 @@
-{
-  "functions": {
-    "pages/api/chat.js": {
-      "includeFiles": "data/**"
-    }
-  }
-}
-
