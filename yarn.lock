@@ -1705,42 +1705,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chat-langchainjs@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "chat-langchainjs@workspace:."
-  dependencies:
-    "@emotion/react": ^11.10.5
-    "@emotion/styled": ^11.10.5
-    "@microsoft/fetch-event-source": ^2.0.1
-    "@mui/material": ^5.11.4
-    "@next/font": 13.1.6
-    "@supabase/supabase-js": ^2.20.0
-    "@types/node": 18.13.0
-    "@types/node-persist": ^3.1.3
-    "@types/react": 18.0.28
-    "@types/react-dom": 18.0.11
-    "@types/ws": ^8.5.4
-    cheerio: ^1.0.0-rc.12
-    cohere-ai: ^5.0.2
-    dotenv: ^16.0.3
-    eslint: 8.34.0
-    eslint-config-next: 13.1.6
-    hnswlib-node: 1.4.2
-    langchain: 0.0.58
-    next: 13.1.6
-    node-persist: ^3.1.3
-    openai: 3.2.1
-    react: 18.2.0
-    react-dom: 18.2.0
-    react-markdown: ^8.0.5
-    sqlite3: ^5.1.6
-    ts-node: ^10.9.1
-    tsx: 3.12.6
-    typescript: 5.0.4
-    ws: ^8.12.1
-  languageName: unknown
-  linkType: soft
-
 "cheerio-select@npm:^2.1.0":
   version: 2.1.0
   resolution: "cheerio-select@npm:2.1.0"
@@ -3008,6 +2972,42 @@ __metadata:
   checksum: 788b6bfe52f1dd8e263cda800c26ac0ca2ff6de0b6eee2fe0d9e3abf15e149b651bd27bf5226be10e6e3edb5c4e5d5985a5a1a98137e7a892f75eff76467ad2d
   languageName: node
   linkType: hard
+
+"gerencia-gpt@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "gerencia-gpt@workspace:."
+  dependencies:
+    "@emotion/react": ^11.10.5
+    "@emotion/styled": ^11.10.5
+    "@microsoft/fetch-event-source": ^2.0.1
+    "@mui/material": ^5.11.4
+    "@next/font": 13.1.6
+    "@supabase/supabase-js": ^2.20.0
+    "@types/node": 18.13.0
+    "@types/node-persist": ^3.1.3
+    "@types/react": 18.0.28
+    "@types/react-dom": 18.0.11
+    "@types/ws": ^8.5.4
+    cheerio: ^1.0.0-rc.12
+    cohere-ai: ^5.0.2
+    dotenv: ^16.0.3
+    eslint: 8.34.0
+    eslint-config-next: 13.1.6
+    hnswlib-node: 1.4.2
+    langchain: 0.0.58
+    next: 13.1.6
+    node-persist: ^3.1.3
+    openai: 3.2.1
+    react: 18.2.0
+    react-dom: 18.2.0
+    react-markdown: ^8.0.5
+    sqlite3: ^5.1.6
+    ts-node: ^10.9.1
+    tsx: 3.12.6
+    typescript: 5.0.4
+    ws: ^8.12.1
+  languageName: unknown
+  linkType: soft
 
 "get-intrinsic@npm:^1.0.2, get-intrinsic@npm:^1.1.1, get-intrinsic@npm:^1.1.3, get-intrinsic@npm:^1.2.0":
   version: 1.2.0
