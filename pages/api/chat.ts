@@ -5,18 +5,29 @@ import { createClient } from '@supabase/supabase-js';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { CallbackManager } from 'langchain/callbacks';
 import { makeChain } from './util';
-import { ChainValues } from 'langchain/dist/schema';
-import storage from 'node-persist';
+import { ChainValues, LLMResult } from 'langchain/dist/schema';
+
+function formatHistory(history: []) {
+  if (history.length === 0) {
+    return "";
+  }
+  let str = "";
+  for (let i = 0; i < history.length; i++) {
+    str += `pregunta: ${history[i][0]}?\n`;
+    str += `respuesta: ${history[i][1]}\n`;
+  }
+  return str;
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
   const body = req.body;
   const dir = path.resolve(process.cwd(), 'data');
-  await storage.init({
-    dir
-  });
+
+  const chat_history = formatHistory(body.history);
 
   const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -49,18 +60,27 @@ export default async function handler(
   const chain = makeChain(vectorstore, CallbackManager.fromHandlers({
     async handleLLMNewToken(token: string) {
       sendData(JSON.stringify({ data: token }));
+    },
+    async handleLLMStart(llm, _prompts: string[]) {
+      console.log("docChain LLMStart", { _prompts });
+    },
+    async handleChainStart(chain) {
+      console.log("docChain ChainStart", { chain });
+    },
+    async handleLLMEnd(output: LLMResult, verbose?: boolean) {
+      console.log("docChain LLMEnd", output.generations);
     }
   }));
 
-
   await chain.call({
     question: body.question,
-    chat_history: body.history,
+    chat_history,
   }).then(async (result) => {
-    await storage.setItem(new Date().toDateString(),JSON.stringify({
-      question: body.question,
-      respuesta: result.text,
-    }))
+    const { data, error } = await supabaseClient
+      .from('historia')
+      .insert([
+        { pregunta: body.question, respuesta: result.text },
+      ])
   }).catch((err) => {
     console.error(err);
   }).finally(() => {

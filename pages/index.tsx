@@ -18,7 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [messageState, setMessageState] = useState<{ messages: Message[], pending?: string, history: [string, string][] }>({
     messages: [{
-      "message": "Hola ¿Cómo puedo ayudarte?",
+      "message": "Hola! Soy GerenciaGPT, un chatbot que te ayudará a resolver tus dudas sobre gerencia de proyectos. ¿Qué quieres saber?",
       "type": "apiMessage"
     }],
     history: []
