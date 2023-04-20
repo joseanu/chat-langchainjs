@@ -1,6 +1,6 @@
 # fly.toml file generated for chat-langchainjs on 2023-02-18T22:00:39-08:00
 
-app = "chat-langchainjs"
+app = "GerenciaGPT"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
