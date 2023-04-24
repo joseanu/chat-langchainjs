@@ -1,13 +1,13 @@
 import { PromptTemplate } from "langchain/prompts";
 
-export const CONDENSE_PROMPT = PromptTemplate.fromTemplate(`Reformula la siguiente PREGUNTA DE SEGUIMIENTO incluyendo el contexto necesario de acuerdo con el HISTORIAL DEL CHAT para que se pueda entender de forma independiente sin cambiar el sentido de la pregunta.
+export const CONDENSE_PROMPT = PromptTemplate.fromTemplate(`Analiza la siguiente PREGUNTA dentro del contexto del HISTORIAL DEL CHAT. Si es una pregunta de seguimiento al chat, reformula la PREGUNTA para que se pueda entender de forma independiente sin cambiar el sentido de la pregunta, en caso contrario, devuelve la PREGUNTA original sin modificación.
 
-PREGUNTA DE SEGUIMIENTO: {question}
+PREGUNTA: {question}
 
 HISTORIAL DEL CHAT:
 {chat_history}
 
-Pregunta independiente:`);
+Pregunta nueva:`);
 
 export const QA_PROMPT = PromptTemplate.fromTemplate(
   `Proporciona una respuesta a esta pregunta basada en los documentos proporcionados.
