@@ -1,18 +1,18 @@
+/* eslint-disable no-process-env */
 import type { NextApiRequest, NextApiResponse } from 'next';
-import path from 'path';
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { createClient } from '@supabase/supabase-js';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { CallbackManager } from 'langchain/callbacks';
+import { LLMResult } from 'langchain/schema';
+import { SupabaseHybridSearch } from 'langchain/retrievers/supabase';
 import { makeChain } from './util';
-import { ChainValues, LLMResult } from 'langchain/dist/schema';
 
 function formatHistory(history: []) {
   if (history.length === 0) {
     return "";
   }
   let str = "";
-  for (let i = 0; i < history.length; i++) {
+  for (let i = 0; i < history.length; i += 1) {
     str += `pregunta: ${history[i][0]}?\n`;
     str += `respuesta: ${history[i][1]}\n`;
   }
@@ -24,8 +24,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
 
-  const body = req.body;
-  const dir = path.resolve(process.cwd(), 'data');
+  const { body } = req;
 
   const chat_history = formatHistory(body.history);
 
@@ -34,14 +33,14 @@ export default async function handler(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   );
 
-  const vectorstore = await SupabaseVectorStore.fromExistingIndex(
-    new OpenAIEmbeddings(),
-    {
-      client: supabaseClient,
-      tableName: 'documents',
-      queryName: 'match_documents',
-    }
-  );
+  const retriever = new SupabaseHybridSearch(new OpenAIEmbeddings(), {
+    client: supabaseClient,
+    similarityK: 2,
+    keywordK: 2,
+    tableName: "documents",
+    similarityQueryName: "match_documents",
+    keywordQueryName: "kw_match_documents",
+  });
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -57,18 +56,18 @@ export default async function handler(
   };
 
   sendData(JSON.stringify({ data: '' }));
-  const chain = makeChain(vectorstore, CallbackManager.fromHandlers({
+  const chain = makeChain(retriever, CallbackManager.fromHandlers({
     async handleLLMNewToken(token: string) {
       sendData(JSON.stringify({ data: token }));
     },
     async handleLLMStart(llm, _prompts: string[]) {
-      console.log("docChain LLMStart", { _prompts });
+      console.log("docChain LLMStart", { llm, _prompts });
     },
     async handleChainStart(chain) {
       console.log("docChain ChainStart", { chain });
     },
-    async handleLLMEnd(output: LLMResult, verbose?: boolean) {
-      console.log("docChain LLMEnd", output.generations);
+    async handleLLMEnd(output: LLMResult) {
+      console.log("questionGenerator LLMEnd", JSON.stringify(output) );
     }
   }));
 
@@ -76,11 +75,11 @@ export default async function handler(
     question: body.question,
     chat_history,
   }).then(async (result) => {
-    const { data, error } = await supabaseClient
+    await supabaseClient
       .from('historia')
       .insert([
         { pregunta: body.question, respuesta: result.text },
-      ])
+      ]);
   }).catch((err) => {
     console.error(err);
   }).finally(() => {

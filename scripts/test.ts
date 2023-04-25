@@ -10,11 +10,14 @@ import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+import { EPub } from "epub2";
+import { embedRequest } from 'cohere-ai/dist/models';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
 const supabaseClient: SupabaseClient = createClient(supabaseUrl, supabaseKey);
 
-const directory = "/Users/joseanu/Desktop/manuales/axioma/xlibro"
+const directory = "/Users/joseanu/Desktop/manuales/axioma/libro"
 
 async function extractDataFromDocs(directory: string): Promise<Document[]> {
   console.log('extracting data from documents...');
@@ -50,14 +53,14 @@ async function embedDocuments(
 
 async function splitDocsIntoChunks(docs: Document[]): Promise<Document[]> {
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 4000,
-    chunkOverlap: 2000,
+    chunkSize: 2000,
+    chunkOverlap: 500,
   });
   console.log('splitting docs into chunks...');
   return await textSplitter.splitDocuments(docs);
 }
 
-(async function run(directory: string) {
+async function run(directory: string) {
   try {
     //load data from each url
     const rawDocs = await extractDataFromDocs(directory);
@@ -68,4 +71,6 @@ async function splitDocsIntoChunks(docs: Document[]): Promise<Document[]> {
   } catch (error) {
     console.log('error occured:', error);
   }
-})(directory);
+}
+
+extractDataFromDocs(directory);

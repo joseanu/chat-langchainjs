@@ -1,48 +1,39 @@
 import { OpenAI } from "langchain/llms/openai";
-import { LLMChain, ConversationalRetrievalQAChain, ChatVectorDBQAChain, loadQAChain, loadQAMapReduceChain } from "langchain/chains";
-import { CallbackManager, ConsoleCallbackHandler } from "langchain/callbacks";
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase';
-import { CONDENSE_PROMPT, QA_PROMPT, combineMapPrompt, combinePrompt } from "./prompts";
-import { LLMResult } from "langchain/dist/schema";
+import { LLMChain, ConversationalRetrievalQAChain, loadQAMapReduceChain } from "langchain/chains";
+import { CallbackManager } from "langchain/callbacks";
+import { BaseRetriever, LLMResult } from "langchain/schema";
+import { ContextualCompressionRetriever } from "../../contextualCompression/contextual_compression";
+import { LLMChainExtractor } from "../../contextualCompression/document_compressors/chain_extract";
+import { CONDENSE_PROMPT, combineMapPrompt, combinePrompt } from "./prompts";
 
-export const makeChain = (vectorstore: SupabaseVectorStore, onTokenStream: CallbackManager) => {
+export const makeChain = (retriever: BaseRetriever, onTokenStream: CallbackManager) => {
   const callbackManager = CallbackManager.fromHandlers({
     async handleLLMStart(llm, _prompts: string[]) {
-      console.log("questionGenerator LLMStart", { _prompts });
+      console.log("questionGenerator LLMStart", { llm, _prompts });
     },
     async handleChainStart(chain) {
       console.log("questionGenerator ChainStart", { chain });
     },
-    async handleLLMEnd(output: LLMResult, verbose?: boolean) {
-      console.log("questionGenerator LLMEnd", output.generations );
+    async handleLLMEnd(output: LLMResult) {
+      console.log("questionGenerator LLMEnd", JSON.stringify(output) );
     }
-  })
+  });
 
   const questionGenerator = new LLMChain({
     llm: new OpenAI({
       callbackManager,
-      modelName: "gpt-3.5-turbo",
+      modelName: "gpt-4",
       maxTokens: 2000,
       verbose: true,
     }),
     prompt: CONDENSE_PROMPT,
     verbose: true,
   });
-  const docChain = loadQAChain(
-    new OpenAI({
-      streaming: Boolean(onTokenStream),
-      callbackManager: onTokenStream,
-      modelName: "gpt-3.5-turbo",
-      maxTokens: 2000,
-      verbose: true,
-    }),
-    { prompt: QA_PROMPT },
-  );
   const docChain2 = loadQAMapReduceChain(
     new OpenAI({
       streaming: Boolean(onTokenStream),
       callbackManager: onTokenStream,
-      modelName: "gpt-3.5-turbo",
+      modelName: "gpt-4",
       maxTokens: 2000,
       verbose: true,
     }),
@@ -53,8 +44,16 @@ export const makeChain = (vectorstore: SupabaseVectorStore, onTokenStream: Callb
   );
 
   return new ConversationalRetrievalQAChain({
-    retriever: vectorstore.asRetriever(),
+    retriever: new ContextualCompressionRetriever({
+      baseCompressor: LLMChainExtractor.fromLLM(new OpenAI({
+        callbackManager,
+        modelName: "gpt-3.5-turbo",
+        maxTokens: 2000,
+        verbose: true,
+      })),
+      baseRetriever: retriever,
+    }),
     combineDocumentsChain: docChain2,
     questionGeneratorChain: questionGenerator,
   });
-}
+};
